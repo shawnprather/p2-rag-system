@@ -2,3 +2,27 @@
 # origin is hand when you wrote the query yourself and claude when a model drafted it; at least 10 must be hand.
 # class is a word you choose, for example identifier, paraphrase or mixed as in the shared sets; scores are reported per class.
 # Lines that start with # are comments, so delete these lines or keep them, as you like.
+c01	identifier	floor_stop_on_slope	claude
+c02	identifier	PhysicsDirectSpaceState2D intersect_ray	claude
+c03	identifier	@export_range	claude
+c04	identifier	NavigationAgent2D target_position	claude
+c05	identifier	ResourceSaver.save	claude
+c06	identifier	@rpc any_peer call_local	claude
+c07	identifier	--headless --export-release	claude
+c08	identifier	call_group	claude
+c09	paraphrase	how do I keep a node alive and reachable from every scene when the scene changes	claude
+c10	paraphrase	make the game remember the player's progress after they quit and come back	claude
+c11	paraphrase	why does my character slowly slide down a hill while standing still	claude
+c12	paraphrase	check whether there is a clear line of sight between the enemy and the player	claude
+c13	paraphrase	make enemies find their own way around walls to reach the player	claude
+c14	paraphrase	ship the game in several languages so the text changes with the player's language	claude
+c15	paraphrase	smoothly mix a walk animation into a run as the character speeds up	claude
+c16	paraphrase	arrange buttons automatically in rows and columns without placing each one by hand	claude
+c17	paraphrase	my project from the previous major version stopped working after I opened it in the new one	claude
+c18	mixed	save game data to user:// as JSON	claude
+c19	mixed	sign an Android export with a release keystore	claude
+c20	mixed	fix shadow acne with the light bias setting	claude
+c21	mixed	does static typing in GDScript make code run faster	claude
+c22	mixed	add a reverb effect to an audio bus	claude
+c23	mixed	GridContainer columns for an inventory screen	claude
+c24	mixed	is_action_just_pressed for a jump in a 3D character	claude

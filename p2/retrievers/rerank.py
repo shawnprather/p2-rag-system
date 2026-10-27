@@ -1,34 +1,81 @@
-"""Your reranker (stage 1): ask Claude to reorder a first-stage system's top 20.
+"""Listwise reranking: Claude reorders hybrid's top 20, as rerank_one() in the 13 lab's pipeline.py.
 
-This file is yours to write. Until you write it, build() raises NotImplementedError, and p2 skips
-the system and lists it as to do. NEEDS_CLAUDE = True tells p2 that searching calls claude -p, so
-CI never regenerates this system's runs; you produce them on your machine and commit them.
+The 20 candidates go to Claude as numbered passages, and RERANK_SCHEMA forces the reply into
+{"order": [20 numbers]}, each between 1 and 20. A reply that is not each number once (or no reply)
+keeps the first-stage order, and the candidates below the top 20 keep their order underneath.
 
-Where the idea is:
-- the 13 lab's pipeline.py in the course repo (class/13-rag-pipeline/lab/starter/pipeline.py):
-  rerank_one() shows the top 20 as numbered passages, RERANK_SCHEMA forces the reply into
-  {"order": [20 numbers]}, a reply that is not each number once keeps the original order, and the
-  documents below the 20 keep their order underneath;
-- when you port RERANK_SCHEMA, also give its items "minimum": 1 and "maximum": 20 (the number of
-  passages), so Claude cannot answer with a number that names no passage: the lab's schema only
-  fixes how many numbers come back, and a reply such as [12, 2, 60, ...] silently keeps the first-stage order;
-- make every call through p2.claude.call(prompt, schema, model=cfg.model,
-  cache_dir=p2.claude.cache_folder(cfg)), which launches claude -p the way the lab does, caches
-  replies, and records the tokens in the run's trace (traces/, which you commit with the run file:
-  p2 check reads it, because CI never calls Claude to run this system again);
-- get the first stage with p2.retrievers.build("hybrid", corpus, cfg).
-
-`p2 answer --system rerank` also needs search_chunks(text, k): the same reranking over the first
-stage's top 20 chunks (hybrid's search_chunks gives them).
-
-A reranker over 20 candidates is one call per query: 20 calls for the practice queries, 40 for the
-test queries. Try two queries first, and look at what Claude sees, before the full run.
+A document is shown through its best chunk in hybrid's fused chunk ranking, not its first words,
+so a long section shows the part that matched. search_chunks reranks hybrid's top 20 chunks the same
+way, which is what `p2 answer --system rerank` uses.
 """
 
+from p2 import claude, retrievers
+from p2.corpus import docid_of
+
 NEEDS_CLAUDE = True
+CANDIDATES = 20
+
+PROMPT = """Rank these passages by how well they answer the search query.
+A passage that states what the query asks about ranks above one that only mentions it or refers to another section.
+
+Query: {query}
+
+{passages}
+
+Reply with the numbers of all {n} passages, each once, most relevant first."""
+
+
+def schema(n):
+    return {
+        "type": "object",
+        "properties": {
+            "order": {"type": "array", "items": {"type": "integer", "minimum": 1, "maximum": n}, "minItems": n, "maxItems": n}
+        },
+        "required": ["order"],
+    }
+
+
+class Rerank:
+    def __init__(self, corpus, cfg, first_stage="hybrid", candidates=CANDIDATES):
+        self.cfg = cfg
+        self.model = cfg.model
+        self.candidates = candidates
+        self.first = retrievers.build(first_stage, corpus, cfg)
+        self.chunks = corpus.chunks(cfg.chunk_words, cfg.chunk_overlap)
+        self.chunk_text = {c.id: c.text for c in self.chunks}
+        self.first_chunk = {}
+        for c in self.chunks:
+            self.first_chunk.setdefault(c.docid, c.id)
+
+    def rerank(self, query, ranking, texts):
+        """ranking: the first stage's (id, score) list; texts: the passage for each id in its top candidates."""
+        top, rest = ranking[: self.candidates], ranking[self.candidates :]
+        n = len(top)
+        if n < 2:
+            return ranking
+        passages = "\n\n".join(f"[{i}] {texts[item]}" for i, (item, _) in enumerate(top, 1))
+        reply = claude.call(
+            PROMPT.format(query=query, passages=passages, n=n), schema(n),
+            model=self.cfg.model, cache_dir=claude.cache_folder(self.cfg),
+        )  # fmt: skip
+        order = (reply.output or {}).get("order")
+        if not isinstance(order, list) or sorted(order) != list(range(1, n + 1)):
+            order = list(range(1, n + 1))  # a malformed reply keeps the first-stage order
+        reranked = [top[i - 1][0] for i in order] + [item for item, _ in rest]
+        return [(item, 1.0 / rank) for rank, item in enumerate(reranked, 1)]
+
+    def search(self, text, k):
+        ranking = self.first.search(text, max(k, self.candidates))
+        best = {}
+        for chunk_id, _ in self.first.search_chunks(text, len(self.chunks)):
+            best.setdefault(docid_of(chunk_id), chunk_id)
+        texts = {d: self.chunk_text[best.get(d, self.first_chunk[d])] for d, _ in ranking[: self.candidates]}
+        return self.rerank(text, ranking, texts)[:k]
+
+    def search_chunks(self, text, k):
+        ranking = self.first.search_chunks(text, max(k, self.candidates))
+        return self.rerank(text, ranking, self.chunk_text)[:k]
 
 
 def build(corpus, cfg):
-    raise NotImplementedError(
-        "rerank is not built yet: write p2/retrievers/rerank.py (the idea is rerank_one() in the 13 lab's pipeline.py)."
-    )
+    return Rerank(corpus, cfg)
