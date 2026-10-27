@@ -24,7 +24,7 @@ One sentence, about your own corpus, naming two of your systems and a direction.
 For example: "On my corpus of Kubernetes documentation, `rerank` has a higher MRR@10 than `hybrid`, because the queries are paraphrases that a first-stage fusion ranks too low."
 It should be something you could be wrong about.
 
-TODO: your hypothesis.
+On my corpus of Godot game engine documentation, I think rerank is going to have a much higher nDCG@10 than hybrid since it allows claude to organize the results which is slow and costly but it should give much better results. The first half of the project lines up with this as well.
 
 ---
 
@@ -36,7 +36,7 @@ A difference of 0.02 is usually not worth a reranker's cost in time and tokens.
 In this course, choose a Δ of at least 0.15 unless you argue for a larger one, because a smaller gap takes more queries than one project can judge.
 Call your number Δ (delta).
 
-TODO: your metric and your Δ, with the reason.
+I would say that nDCG@10 is most likley better since in Godot most things have multiple pages like 2D, 3D, and other types so there really isn't a single correct awnser depending on the search. I think a Δ gap of 0.15 is good here since if the users specifies 3D they should only get 3D results at the top.
 
 ---
 
@@ -65,7 +65,7 @@ After you score the own corpus, the minimum detectable difference that `uv run p
 It should come out at or below your Δ.
 If it does not, your queries varied more than your stage 1 sd suggested, and you will say so in the outcome.
 
-TODO: your sd, which pair it came from, your n, and the number of queries you will write (at least n).
+My SD is 0.273 which came from the rerank - hybrid from the 20 practice questions, my n is 26 because it is 5.1^2 which is 25.97 or 26. This fits within my 34 queries so it should be fine. The SD is a little rough since it comes from a different corpus.
 
 ---
 
@@ -82,7 +82,8 @@ This is the default rule, and you can tighten it, but do not loosen it after you
 | around zero, with both ends inside plus or minus Δ | well-powered null: a difference as large as Δ is ruled out |
 | around zero, with an end beyond plus or minus Δ | inconclusive: the gold set could not settle it, and I say so |
 
-TODO: confirm or tighten this rule, and name the two systems and the metric once more.
+I'm just keeping the default table and then the test is the paries 95% of rerank minus hybrid for nDCG@10.
+
 
 ---
 
