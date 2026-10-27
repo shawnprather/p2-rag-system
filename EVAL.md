@@ -265,6 +265,7 @@ Every trace in traces/ that records a Claude call:
 | traces/answers-rerank.r1.jsonl | rerank | 12 | 24 | 0 | 293,480 | 7,262 | 466.2 | 24,457 | 605 | 38.8 |
 | traces/answers-rerank.r2.jsonl | rerank | 12 | 24 | 0 | 292,426 | 8,167 | 246.7 | 24,369 | 681 | 20.6 |
 | traces/answers-rerank.r3.jsonl | rerank | 12 | 24 | 0 | 295,058 | 7,934 | 246.2 | 24,588 | 661 | 20.5 |
+| traces/own-own-rerank.jsonl | rerank | 34 | 34 | 2 | 871,257 | 10,300 | 345.0 | 25,625 | 303 | 10.1 |
 | traces/shared-practice-rerank.jsonl | rerank | 20 | 20 | 2 | 401,014 | 8,633 | 277.3 | 20,051 | 432 | 13.9 |
 | traces/shared-practice-rerank.r1.jsonl | rerank | 20 | 20 | 0 | 383,015 | 8,766 | 276.6 | 19,151 | 438 | 13.8 |
 | traces/shared-practice-rerank.r2.jsonl | rerank | 20 | 20 | 0 | 383,653 | 9,377 | 293.1 | 19,183 | 469 | 14.7 |
@@ -287,12 +288,15 @@ Systems that do not call Claude, from traces/retrieval/ on the machine that last
 
 | Trace | System | Queries | Seconds | Milliseconds per query |
 | --- | --- | ---: | ---: | ---: |
+| traces/retrieval/own-own-bm25.jsonl | bm25 | 34 | 0.03 | 0.9 |
+| traces/retrieval/own-own-dense.jsonl | dense | 34 | 0.12 | 3.7 |
+| traces/retrieval/own-own-hybrid.jsonl | hybrid | 34 | 0.17 | 4.9 |
 | traces/retrieval/shared-practice-bm25.jsonl | bm25 | 20 | 0.04 | 1.9 |
-| traces/retrieval/shared-practice-dense.jsonl | dense | 20 | 0.14 | 6.9 |
-| traces/retrieval/shared-practice-hybrid.jsonl | hybrid | 20 | 0.19 | 9.6 |
-| traces/retrieval/shared-test-bm25.jsonl | bm25 | 40 | 0.08 | 1.9 |
-| traces/retrieval/shared-test-dense.jsonl | dense | 40 | 0.23 | 5.8 |
-| traces/retrieval/shared-test-hybrid.jsonl | hybrid | 40 | 0.37 | 9.2 |
+| traces/retrieval/shared-practice-dense.jsonl | dense | 20 | 0.14 | 6.8 |
+| traces/retrieval/shared-practice-hybrid.jsonl | hybrid | 20 | 0.19 | 9.5 |
+| traces/retrieval/shared-test-bm25.jsonl | bm25 | 40 | 0.08 | 2.0 |
+| traces/retrieval/shared-test-dense.jsonl | dense | 40 | 0.23 | 5.9 |
+| traces/retrieval/shared-test-hybrid.jsonl | hybrid | 40 | 0.37 | 9.4 |
 <!-- p2:end stretch-cost -->
 
 ### The grep agent (option 5)
