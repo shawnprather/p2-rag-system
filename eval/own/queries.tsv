@@ -26,3 +26,13 @@ c21	mixed	does static typing in GDScript make code run faster	claude
 c22	mixed	add a reverb effect to an audio bus	claude
 c23	mixed	GridContainer columns for an inventory screen	claude
 c24	mixed	is_action_just_pressed for a jump in a 3D character	claude
+h01	paraphrase	how to set axis controls for controller	hand
+h02	paraphrase	how to implement fluid particles for realistic liquid physics	hand
+h03	paraphrase	why are the lighting shadows not updating	hand
+h04	mixed	physics_process timing	hand
+h05	paraphrase	how to combine multiple collision models	hand
+h06	paraphrase	pyhsics jittering	hand
+h07	paraphrase	godot c++ vs scripting	hand
+h08	mixed	multimesh heightmap for shaders	hand
+h09	mixed	parallax occlusion	hand
+h10	paraphrase	how to create meshes that can deform	hand
