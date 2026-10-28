@@ -25,7 +25,11 @@ The minimum detectable difference is the smallest gap this many queries could re
 
 For each of `dense`, `hybrid` and `rerank`, one or two sentences: the embedding model, how documents were chunked, what was fused and how, how many candidates the reranker saw, and anything you changed from the 12 and 13 lab code.
 
-TODO: describe your three systems.
+Dense is bge-small-en-v1.5 which was done in 300 word chunks with 50 words of overlap. It was with cosine similarity where a page scores with its highest chunk. bge was tested and was better than potion.
+
+Hybrid uses reciprocal rank fusion with a k of 60 for bm25 and then dense over their rankings.
+
+Lastly Rerank is just hybrid but the claude sonnet reorders the top 20 results. Each page shows its best chunk. If the claude response errors it just revets to the original.
 
 ### Practice queries (20)
 
@@ -94,10 +98,16 @@ Your test run files are scored by the course and the score comes back to you as 
 ### What the intervals let you claim
 
 Which differences are distinguishable from zero and which are not?
+
+The two distinguishable pairs are rerank-hybrid and rerank-bm25. The rest are not distinguishable to differing amounts.
+
 What is the minimum detectable difference at 20 queries, and what does that say about any gap smaller than it?
+
+So 0.19 which is hybrid-bm25 up to 0.41 which is dense-bm25. So any gap smaller than 0.2-0.4 we can't make results from. So with just 20 queries we basiclly just can't tell.
+
 Which claim from lecture 12 or 13 did your numbers support, and which did they leave open?
 
-TODO: write what the practice-query intervals let you claim.
+One of the main claims that lecture 12 that was supported was that of the fact that no retriever wins everywhere. Both bm25 and dense are good at different things bm25 for identifier and dense for paraphrase. Then for lecture 13 the main thing that was supported was just that rerankers are very good at improving results. I couldn't tell if hybrid fusion.
 
 ---
 
@@ -110,13 +120,22 @@ TODO: write what the practice-query intervals let you claim.
 <!-- p2:end answers -->
 
 Which system answered, and why that one?
+
+Rerank did because it had the best practice MRR of 0.75 and it beat hybrid so it is the best to provide the best chunks to claude.
+
 What did you change in `prompts/answer.txt`, if anything, and did the verified share or the declined share move?
+
+Nothing since the results were verified and declined as they should have been. So nothing moved.
 
 Then read three in-corpus answers that `uv run p2 verify` passed.
 For each one, open the cited chunk and say whether the quote really supports the claim next to it.
 The check proves a quote is a real piece of the chunk and cannot prove that it supports the claim, so this reading is the part only you can do.
 
-TODO: write your answer choices and your three-answer audit.
+a02: supports, it gave a good qoute back which was acurate but missed out on supplying evidence for the fact about methane.
+
+a05: supports, it gives a qoute that is the direct original of what it was saying.
+
+a08: doesn't support, the claim was talking about breathable air not about food and water although they are related so it is close ish but not supported by the qoute.
 
 ---
 
@@ -128,7 +147,7 @@ What is it, where did it come from, how many documents and how many megabytes, a
 Name the one or two documents you were least sure about and what you decided.
 Say which of the allowed sources in the brief it comes from.
 
-TODO: describe your corpus and its license basis.
+It is from the Godot Engine 4.7 docs which is a game making engine. It came from the documentation repo. It is 353 documents, 508k words, 3.5 MB. Its License is CC BY 3.0 to Juan Linietsky, Ariel Manzur and the Godot community. The documents I was least sure about was the actual classes folder which was under a different license being MIT and is 1.58M words so too much to cover.
 
 ### The gold set
 
@@ -137,7 +156,13 @@ How did you decide that a document is relevant: write your relevance rule in two
 How did you find candidates (the systems' top 10, a keyword search, reading), and did you read every document before you labeled it?
 Your labels are binary (`rel` 1) unless you say otherwise: if you use graded labels, declare the scale here, for example 2 means the document answers the query fully and 1 means it helps.
 
-TODO: describe your gold set and your relevance rule.
+34 queries, 10 handwritten, 24 claude written. Classes are identifier, paraphrase, and mixed. This was to keep similarity with the shared set. Most of them were paraphrase since that was the main thing I wanted to target. 
+
+Relevance rule is that a page that is explaining how to do something is most relavant and if 2D is mentioned then the results should be 2D and vise virsa if 3D no overlap if possible.
+
+Candidates were found from the4 top 10 of all four systems bm25, dense, hybrid, rerank, and an exact match search which snippets shown for the judging of each. 
+
+Yes, I did read every document before labeling it and then I also had Claude check over my work to make sure I didn't miss anything that was hard to confirm (Since godot is kinda complex especially with shader and physics stuff).
 
 ---
 
@@ -146,33 +171,107 @@ TODO: describe your gold set and your relevance rule.
 Scores per system on your gold set.
 
 <!-- p2:begin own -->
-_No scored runs here yet: run `uv run p2 run --corpus own --system bm25` (or `--all`), then `uv run p2 score`._
+| System | Recall@10 | MRR@10 | nDCG@10 |
+| --- | ---: | ---: | ---: |
+| bm25 | 0.713 | 0.574 | 0.572 |
+| dense | 0.760 | 0.712 | 0.659 |
+| hybrid | 0.833 | 0.671 | 0.683 |
+| rerank | 0.902 | 0.941 | 0.879 |
+
+34 judged queries; nDCG uses binary labels; a random ranking of the 353 documents would get recall@10 near 0.028.
 <!-- p2:end own -->
 
 The same scores per query class.
 
 <!-- p2:begin own-classes -->
-_No scored runs here yet: run `uv run p2 run --corpus own --system bm25` (or `--all`), then `uv run p2 score`._
+| System | Metric | identifier (n=8) | paraphrase (n=16) | mixed (n=10) |
+| --- | --- | ---: | ---: | ---: |
+| bm25 | Recall@10 | 1.000 | 0.406 | 0.975 |
+| bm25 | MRR@10 | 1.000 | 0.237 | 0.773 |
+| bm25 | nDCG@10 | 0.980 | 0.239 | 0.778 |
+| dense | Recall@10 | 0.875 | 0.693 | 0.775 |
+| dense | MRR@10 | 0.938 | 0.481 | 0.900 |
+| dense | nDCG@10 | 0.846 | 0.492 | 0.777 |
+| hybrid | Recall@10 | 1.000 | 0.646 | 1.000 |
+| hybrid | MRR@10 | 1.000 | 0.382 | 0.870 |
+| hybrid | nDCG@10 | 0.950 | 0.436 | 0.865 |
+| rerank | Recall@10 | 1.000 | 0.792 | 1.000 |
+| rerank | MRR@10 | 1.000 | 0.875 | 1.000 |
+| rerank | nDCG@10 | 0.985 | 0.769 | 0.972 |
 <!-- p2:end own-classes -->
 
 The same scores for the queries you wrote yourself (`hand`) and the ones a model drafted (`claude`), with the difference between the two groups and its interval.
 Once both groups have queries, the table also says whether `bm25`'s lead over `dense` differs between them, and what share of each query's content words its best relevant document contains, which is stretch option 6.
 
 <!-- p2:begin own-origins -->
-_No scored runs here yet: run `uv run p2 run --corpus own --system bm25` (or `--all`), then `uv run p2 score`._
+| System | Metric | hand (n=10) | claude (n=24) | hand minus claude | 95% interval | Reading |
+| --- | --- | ---: | ---: | ---: | ---: | --- |
+| bm25 | Recall@10 | 0.650 | 0.740 | -0.090 | [-0.365, +0.183] | not distinguishable |
+| bm25 | MRR@10 | 0.456 | 0.624 | -0.168 | [-0.452, +0.130] | not distinguishable |
+| bm25 | nDCG@10 | 0.427 | 0.632 | -0.205 | [-0.435, +0.025] | not distinguishable |
+| dense | Recall@10 | 0.817 | 0.736 | +0.081 | [-0.174, +0.310] | not distinguishable |
+| dense | MRR@10 | 0.703 | 0.715 | -0.012 | [-0.303, +0.269] | not distinguishable |
+| dense | nDCG@10 | 0.647 | 0.664 | -0.017 | [-0.240, +0.195] | not distinguishable |
+| hybrid | Recall@10 | 0.892 | 0.809 | +0.083 | [-0.095, +0.269] | not distinguishable |
+| hybrid | MRR@10 | 0.570 | 0.713 | -0.143 | [-0.390, +0.113] | not distinguishable |
+| hybrid | nDCG@10 | 0.652 | 0.696 | -0.045 | [-0.257, +0.170] | not distinguishable |
+| rerank | Recall@10 | 0.942 | 0.885 | +0.056 | [-0.065, +0.189] | not distinguishable |
+| rerank | MRR@10 | 0.950 | 0.938 | +0.013 | [-0.108, +0.146] | not distinguishable |
+| rerank | nDCG@10 | 0.896 | 0.873 | +0.023 | [-0.101, +0.154] | not distinguishable |
+
+The hand and claude queries are different queries, so the interval of hand minus claude comes from resampling the queries within each group (10,000 times), not from pairing them.
+
+Do model-written queries favor keyword search? bm25's lead over dense (bm25 minus dense, per query) on the claude queries and on the hand queries, and claude minus hand:
+
+| Metric | Lead on claude | Lead on hand | Claude minus hand | 95% interval | Reading |
+| --- | ---: | ---: | ---: | ---: | --- |
+| Recall@10 | +0.003 | -0.167 | +0.170 | [-0.197, +0.502] | not distinguishable |
+| MRR@10 | -0.092 | -0.247 | +0.156 | [-0.144, +0.466] | not distinguishable |
+| nDCG@10 | -0.032 | -0.220 | +0.189 | [-0.051, +0.428] | not distinguishable |
+
+Mean content-word overlap, the share of a query's content words found in its best relevant document: hand 0.67 (10 queries), claude 0.83 (24 queries).
+
+Stretch option 6 asks for at least 20 judged queries of each origin; here there are 10 hand and 24 claude.
 <!-- p2:end own-origins -->
 
 Differences between every pair of systems.
 
 <!-- p2:begin own-pairs -->
-_No scored runs here yet: run `uv run p2 run --corpus own --system bm25` (or `--all`), then `uv run p2 score`._
+| Comparison | Metric | Mean difference | 95% interval | MDD | Reading |
+| --- | --- | ---: | ---: | ---: | --- |
+| dense minus bm25 | Recall@10 | +0.047 | [-0.108, +0.206] | 0.224 | not distinguishable |
+| dense minus bm25 | MRR@10 | +0.137 | [+0.021, +0.264] | 0.174 | dense higher |
+| dense minus bm25 | nDCG@10 | +0.087 | [-0.016, +0.193] | 0.151 | not distinguishable |
+| hybrid minus bm25 | Recall@10 | +0.120 | [+0.044, +0.218] | 0.126 | hybrid higher |
+| hybrid minus bm25 | MRR@10 | +0.097 | [+0.022, +0.175] | 0.110 | hybrid higher |
+| hybrid minus bm25 | nDCG@10 | +0.111 | [+0.056, +0.170] | 0.083 | hybrid higher |
+| hybrid minus dense | Recall@10 | +0.074 | [-0.074, +0.221] | 0.212 | not distinguishable |
+| hybrid minus dense | MRR@10 | -0.041 | [-0.151, +0.067] | 0.159 | not distinguishable |
+| hybrid minus dense | nDCG@10 | +0.024 | [-0.065, +0.109] | 0.125 | not distinguishable |
+| rerank minus bm25 | Recall@10 | +0.189 | [+0.083, +0.309] | 0.164 | rerank higher |
+| rerank minus bm25 | MRR@10 | +0.367 | [+0.226, +0.509] | 0.207 | rerank higher |
+| rerank minus bm25 | nDCG@10 | +0.308 | [+0.196, +0.423] | 0.166 | rerank higher |
+| rerank minus dense | Recall@10 | +0.142 | [+0.010, +0.279] | 0.196 | rerank higher |
+| rerank minus dense | MRR@10 | +0.229 | [+0.093, +0.373] | 0.205 | rerank higher |
+| rerank minus dense | nDCG@10 | +0.220 | [+0.104, +0.344] | 0.174 | rerank higher |
+| rerank minus hybrid | Recall@10 | +0.069 | [+0.000, +0.152] | 0.108 | not distinguishable |
+| rerank minus hybrid | MRR@10 | +0.270 | [+0.141, +0.407] | 0.195 | rerank higher |
+| rerank minus hybrid | nDCG@10 | +0.196 | [+0.095, +0.304] | 0.154 | rerank higher |
+
+The interval is a paired bootstrap (10,000 resamples of the queries); MDD is the smallest difference this many queries detect 80% of the time.
 <!-- p2:end own-pairs -->
 
 Which differences are distinguishable and which are not, at your gold-set size?
+
+The differences that are distinguishable are rerank-hybrid, rerank-dense, rerank-bm25, and hybrid-bm25. The ones that aren't dense-bm25, and hybrid-dense.
+
 Do the `hand` queries and the `claude` queries tell the same story?
+
+mostly, rerank is the best for both. bm25 does significantly worse for the handwritten ones because there isn't as many direct word hits as there is in the claude wrote ones. Also most of mine are paraphrase so it skews that direction.
+
 Did your prediction in `DECISIONS.md` prompt 1 hold?
 
-TODO: write what your own-corpus intervals let you claim.
+Yes my predictions held very well. I think the learning from lesson 12, 13 and learning about the different types of systems helped a lot in perdicting it I mean also in general bm25 is kinda bad and rerank is pretty good unsuprisingly.
 
 ---
 
@@ -181,6 +280,8 @@ TODO: write what your own-corpus intervals let you claim.
 Change one thing and keep everything else the same.
 Write your hypothesis here before you run it, in one sentence with a direction: "I expect X to raise MRR@10 on my corpus because Y."
 The run file for it lives in `runs/own/ablation/`.
+
+I expect switching from codes to the lab tokenizer on bm25 to lower nDCG@10 because the score for hits on rare words won't effect the score returned unlike codes meaning that in theory like physics_process will return a bunch more stuff about physics and process and won't filter stuff about physics_process as much.
 
 <!-- p2:begin own-ablation -->
 _No ablation runs yet: `uv run p2 run --corpus own --system NAME --ablation` writes one to runs/own/ablation/, then `uv run p2 score` fills this table._
@@ -281,6 +382,9 @@ Every pair of systems on the same queries where at least one calls Claude, the o
 | shared practice: bm25 minus rerank | 20 | -0.243 | [-0.476, -0.010] | 20,051 | 13.9 | rerank higher |
 | shared practice: dense minus rerank | 20 | -0.188 | [-0.392, +0.017] | 20,051 | 13.9 | not distinguishable |
 | shared practice: hybrid minus rerank | 20 | -0.279 | [-0.443, -0.128] | 20,051 | 13.9 | rerank higher |
+| own: bm25 minus rerank | 34 | -0.367 | [-0.509, -0.226] | 25,625 | 10.1 | rerank higher |
+| own: dense minus rerank | 34 | -0.229 | [-0.373, -0.093] | 25,625 | 10.1 | rerank higher |
+| own: hybrid minus rerank | 34 | -0.270 | [-0.407, -0.141] | 25,625 | 10.1 | rerank higher |
 
 The difference is the cheaper system's score minus the dearer one's, with its paired interval; the savings count Claude calls only, so a system that makes none saves all of the other's.
 

@@ -20,13 +20,16 @@ Prompt 3 in particular only works in your own words.
 ## 1. Why this corpus, and what you expected
 
 Why did you pick the corpus you used in stage 2, and why does it belong to a field or a question you care about?
+
+I picked the godot game engine documentation in stage two because I've been working on making a game and it has been somewhat difficult to find good documentation for the issues I've been running into. So I wanted to make a rag for it so I could search for the important information I need to get to help me make the game.
+
 Then say what you expected before you measured anything: which of `bm25`, `dense`, `hybrid` and `rerank` do you think will win on it, and which will do worst, and why?
+
+I think bm25 will do the worst by far purely since my prompts were wrote in plain english and mainly paraphases which bm25 doesn't do that good at. In comparison I think rerank will be by far the best since it is the most expensive and slowest and has the most steps to be able to get the right result espiecally the end sorting.
 
 Commit this answer before your first `uv run p2 score` on the own corpus.
 Git history then shows that the expectation came first, which is what lets it be wrong in a way that teaches you something.
 If you were surprised later, say so in prompt 4 or in EVAL.md; do not come back and rewrite this one.
-
-TODO: your answer to prompt 1.
 
 ---
 
