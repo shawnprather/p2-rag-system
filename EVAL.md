@@ -339,10 +339,11 @@ RR is the reciprocal rank of the first relevant document in the top 10 (0 when n
 <!-- p2:end own-ablation-queries -->
 
 What did you change, what happened, and does the interval support the claim you want to make?
+
+I changed the tokenizer from codes to the lab tokenizer. Not all to much barley anything changed in terms of results. The interval for bm25_lab - bm25 doesn't support it because it includes 0 so I think the change is actually quite small. Since the result was not distinguishable the size of effect that could have been seen is a gap of around 0.03 since the MDD is 0.031 and 34 queries. It seemed to not do all too much c08 did however get worse with the best response which was #1 with the new tokenizer it fell down to #3. c24 helped the most but it was still only 0.05 which is basiclly negligable so all in all not that meaningful.
+
 If the result is not distinguishable, say what size of effect your gold set could have seen.
 Read the queries at the top of each list in the second table, and say whether your change explains them.
-
-TODO: write the ablation: the one change, the hypothesis, the result and the claim.
 
 ---
 
@@ -354,8 +355,14 @@ Then sort the failures by cause, for example a vocabulary mismatch, near-duplica
 
 | qid | what the best system returned | what was relevant | cause | what you would try |
 |---|---|---|---|---|
+| c10 | `io-background_loading` | `io-saving_games` | specific word wasn't said | add more candidates and rewrite query |
+| c09 | `scripting-change_scenes_manually` | `scripting-singletons_autoload` | specific word wasn't said | add more candidates and rewrite query |
+| c12 | `math-vector_math` | `physics-ray-casting` | specific word wasn't said | rewrite query from miss |
+| c13 | `navigation-navigation_introduction_2d` | `navigation-navigation_using_navigationagents` | 2d/3d almost exact same article | specifiy 2d/3d |
+| h02 | `physics-soft_body` | `3d-particles-creating_a_3d_particle_system` | ambiguous query and bad reranking | clearer query |
+| h03 | `3d-global_illumination-using_lightmap_gi` | `2d-2d_lights_and_shadows` | bad rerank / version unspecified | better system for version check |
 
-TODO: add one row for each failure you analyzed, and write two or three sentences on the pattern you see across them.
+I think the main culprit with most of these issues comes down to not having enough canidates since that would have solved at least 3 of the biggest failures directly and indirectly could have helped fix 2 of the other ones. A lot of the good articles just didn't show up from the specifc words not matching the query so any system to help improve fuzzy searching and dense stuff would help aswell.
 
 ---
 
@@ -368,7 +375,9 @@ Did the winner change between the shared corpus and yours?
 Why, or why not: what is different about the two collections (document length, vocabulary, identifiers, near-duplicates, how the queries were written), and which of your explanations did you test and which are guesses?
 Say what 20 queries on one side and your gold-set size on the other cannot support.
 
-TODO: write the cross-corpus comparison.
+No they were both rerank, the Godot set did a lot better in general but specifaclly on rerank where it scored ~.2 better than the shared one. I think Godot has a lot of similar documents and having claude be able to sort the documents at the end which is a lot more intellegant is what caused the massive leap in performance. Godot has a bunch more words and more near duplicates. There was also a bunch more paraphrase compared to the shared set which rerank and hybrid both do better on. I also think the queries given for Godot may just be easier. 
+
+For explanations the main tested one is that bm25 does better than bm25 from the labs tokenizer but only by a tiny bit. For guesses, dense does better on longer pages like Godot, the queries I and claude wrote I think are just a bunch easier. Since the corpuses use different queries we can't compare them unfortnatley but in general most of the gaps werent enough to tell anything so it would need more to actually find a difference if any.
 
 ---
 
@@ -458,7 +467,20 @@ _No stretch runs yet (stretch option 5): `uv run p2 run --corpus own --queries e
 
 ### Your stretch
 
-Write the five things here.
+1. The option's name:
+    Rider
+2. What you did, and the files that hold it:
+    3 repeats of rerank of practice queries 
+    runs/shared/rerank.practice.r1–r3.trec
+    3 repeats of the cited answers w/ traces
+    answers/shared/rerank.r1–r3.json
+    A preregistered claim in prereg which was commited before hand
+3. The table `p2 score` wrote for it, by name: one of the three below, `own-ablation` and `own-ablation-queries` in section 5 for a second ablation, `own-origins` in section 4 for the hand and claude queries, or `repeats` in section 9 for the rider:
+    repeats
+4. What its interval lets you claim, and what it does not:
+    The interval lets me claim that rerank's gain over hybrid has been tested through multiple runs and the amount gained is consistant. It doesn't claim that it would be stable on other queries or with different models.
+5. One thing you would do next, and what result would tell you it worked:
+    It wouldn't hurt to try it again on a different day or try testing with different models to see if it holds. Or even maybe different queries. I would be looking for if the MRR stays near 0.75 and beats hybrid with an interval above 0.
 
 ---
 
@@ -508,7 +530,7 @@ Each repeat answers the same questions, so the repeats are not independent trial
 Does the reranker's gain over its first stage survive the run-to-run variation?
 Write what the spread is, how it compares with the gain, and what the Wilson intervals on the verified share and the declined share say about 8 and 4 questions.
 
-598E: write the repeats result here.
+The reranker's gain over its first stage does survive run to run variation. The rerank spread MRR@10 was 0.750 in all 3 of them so the range is 0. For nDCG@10 it was 0.727, 0.727, and 0.731 so the range is 0.004. It compares quite well since it is very small, its range is about 70x smaller than the gain meaning it is very significant. Wilson intervals tell us that since we got 8/8 on the verified and 4/4 on the declined that on the verified the true rate is above 68% and from the declined it is likley above 51% which is pretty good given the small sample size.
 
 ### The pre-registered claim
 
@@ -516,4 +538,8 @@ The claim, the smallest effect, the gold-set size and the test are in `PREREG.md
 Here, say whether you followed the plan, what the interval turned out to be, and what that means.
 The outcome section of `PREREG.md` holds the short version.
 
-598E: write the claim and its outcome here.
+Yes I did follow the plan which was the pair, the metric, delta, and the test which were all fixed in PREREG before doing any judgment (rerank-hybrid, nDCG@10, delta of 0.15, n=26). The gold set had 34 queries and nothing was amended. 
+
+The interval turned out to be for rerank-hybrid on nDCG@10 +0.196 for the 34 queries and a MDD of p2 score = 0.154.
+
+Since the interval is above 0 rerank does beat hybrid on the godot documentation. The gap is bigger than 0.15 which is good. The MDD is quite close to the delta mening the questions may have been too easy to awnser which may have made the results not stand out as much.

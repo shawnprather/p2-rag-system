@@ -94,7 +94,13 @@ Which row of the table in section 4 is it?
 Did your gold set reach the size section 3 asked for, and what was the minimum detectable difference that `uv run p2 score` printed?
 What would you do next, and what would you want a reader to take from this?
 
-TODO: your outcome.
+The interval was rerank-hybrid on nDCG@10 and was +0.196 from 0.095 to 0.304 for the 34 queries.
+
+It is in row 1 being supported since the interval is above zero and is in the right direction being rerank is better.
+
+Yes the gold set reached the size which was 34 queries which is more than 26. The MDD was 0.154 which was above the delta I set of 0.15.
+
+Add more varied queries and more data to help enhance the system and make the accuracy better as well as the information within it more vast. For a reader to take away, I think the big thing was that Claude reranking the output made a much bigger difference than was expected which would help the end user significantly to find what they are looking for.
 
 ---
 

@@ -44,7 +44,7 @@ If you rejected the alternative without measuring it, say why that was a fair ca
 "There was no alternative" is not an answer.
 Find the fork.
 
-TODO: your answer to prompt 2.
+One real design choice that could have gone either way is the bm25 tokenizer when I was testing codes vs lab. I decided to stick with codes after doing my ablation since the results were very slightly better than lab (nDCG@10 for codes was 0.572 and 0.555 for lab). I think there would be some prompts where lab would do better than codes but given the documentation base where _,-, and other symbols have a fair bit of meaning I found it valuable to keep.c
 
 ---
 
@@ -60,7 +60,7 @@ What did you do instead?
 If it genuinely never happened, say so plainly, and then say what you would have had to check in order to notice.
 Being honest here costs you far less than a story you cannot defend when you record your video.
 
-TODO: your answer to prompt 3.
+I had to take a fair bit of time to decide on which corpus to choose since Claude was trying to push me towards doing a mineral or mining corpus which is interesting but isn't the most useful to me. After having it help me brainstorm ideas for stuff that might be relevant I realized that having a rag for the Godot game engine would be helpful since I have been recently learning to make games within Godot. So I picked Godot 4.7 doc since that is the version I am using and it will be of help to me.
 
 ---
 
@@ -72,7 +72,7 @@ It could be a mean over a small query class, a difference whose interval include
 What would have to be true for you to trust it?
 Did you do anything to test it, and what did that show?
 
-TODO: your answer to prompt 4.
+One number I don't fully trust is the Wilson intervals for the verified questions since there was only 8 questions which it was 100% on but that really wasn't enough data to be able to come to a good basis since that mens that it is between 68% and 100% actual. To trust it I would need to test more questions to confirm it is 100%. I did do some stuff to test it being the 3 repeat tests indirectly which they also all got 8/8 which means it is consistent at least.
 
 ---
 
@@ -83,4 +83,5 @@ One thing in your system, your corpus or your gold set that is not right, not fi
 What would you do next, and how would you find out whether it matters?
 Name the file, the query or the document where someone could look.
 
-TODO: your answer to prompt 5.
+Some stuff that is wrong or I would redo is that the first stage for rerank dropped a fair few good results so incraesing the number of candidates up to 40 would most likley help a bunch (query c10 in runs/own/hybrid.trec relevant page io-saving_games is ranked #27 outside candidates). Also being able to actually include the coding API would also be useful but I don't know how much help it would be since it is very verbose and not that explanitive (the classes/ folder of the godot-docs repo). A bunch of the docs also repeat their own title as the first line (for example corpora/own/docs/physics-using_character_body_2d.md) and all of the images were lost which would be good to have been saved.
+
